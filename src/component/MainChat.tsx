@@ -2,101 +2,43 @@ import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa6';
 import { MdClose } from 'react-icons/md';
 import { SlOptions } from 'react-icons/sl';
+import { useQuery, useMutation } from 'react-query';
+import { chatService } from '../service/chatt';
+import { ChattData } from '../types/chatt';
 
 const MainChat = ({ onCloseClick }) => {
-  const messages = [
-    {
-      id: 1,
-      content: 'Hi there!',
-      sender: 'You',
-      time: '10:30 AM',
-      date: 'Today June 09, 2021',
+  const { data: chatData, isLoading, error, refetch } = useQuery('chats', () => chatService.getAll());
+  
+
+  const sendMessageMutation = useMutation(chatService.create, {
+    onSuccess: () => {
+      refetch(); // Refresh messages after sending a new message
     },
-    {
-      id: 2,
-      content: 'Hello! How are you?',
-      sender: 'Friend1',
-      time: '10:35 AM',
-      date: 'Today June 09, 2021',
-    },
-    {
-      id: 3,
-      content: "I'm good. How about you?",
-      sender: 'Friend2',
-      time: '10:40 AM',
-      date: 'Today June 09, 2021',
-    },
-    {
-      id: 1,
-      content: 'Hi there!',
-      sender: 'You',
-      time: '10:30 AM',
-      date: 'New Message',
-    },
-    {
-      id: 2,
-      content: 'Hello! How are you?',
-      sender: 'Friend1',
-      time: '10:35 AM',
-      date: 'New Message',
-    },
-    {
-      id: 3,
-      content: "I'm good. How about you?",
-      sender: 'Friend2',
-      time: '10:40 AM',
-      date: 'New Message',
-    },
-  ];
+  });
+
+  const [newMessage, setNewMessage] = useState('');
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim()) return; // Don't send empty messages
+    await sendMessageMutation.mutateAsync({ message: newMessage, sender: 'Diska', created_at: new Date().toISOString() });
+    setNewMessage(''); // Clear input field after sending message
+  };
 
   const renderMessagesWithSeparators = () => {
-    let currentDate = null;
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
 
-    return messages.map((message) => {
-      const messageDate = message.date;
+    if (error) {
+      return <div>Error fetching messages...</div>;
+    }
 
-      let separator = null;
-
-      if (currentDate !== messageDate) {
-        currentDate = messageDate;
-
-        separator = (
-          <>
-            <div
-              className={`text-center mt-2 mb-1 font-semibold ${
-                messageDate === 'New Message'
-                  ? 'text-red-600'
-                  : 'text-slate-600'
-              } relative`}
-            >
-              <hr
-                className={`mt-1 mb-2 ${
-                  messageDate === 'New Message'
-                    ? 'border-red-600'
-                    : 'border-gray-300'
-                }  absolute top-2 right-0 w-[210px]`}
-              />
-              {messageDate}
-              <hr
-                className={`mt-1 mb-2 ${
-                  messageDate === 'New Message'
-                    ? 'border-red-600'
-                    : 'border-gray-300'
-                } absolute top-2 w-[210px]`}
-              />
-            </div>
-          </>
-        );
-      }
+    return chatData?.data.map((messages: ChattData) => {
+      const { id, message, sender, created_at } = messages;
 
       return (
-        <React.Fragment key={message.id}>
-          {separator}
-          <Message
-            content={message.content}
-            sender={message.sender}
-            time={message.time}
-          />
+        <React.Fragment key={id}>
+          <Message content={message} sender={sender} time={created_at} />
         </React.Fragment>
       );
     });
@@ -105,7 +47,7 @@ const MainChat = ({ onCloseClick }) => {
   return (
     <div>
       <div className="border-b-2 border-slate-300">
-        <div className="mx-8  items-center grid grid-cols-12 mb-3">
+        <div className="mx-8 items-center grid grid-cols-12 mb-3">
           <div className="text-xl col-span-1 cursor-pointer ">
             <FaArrowLeft onClick={onCloseClick} />
           </div>
@@ -120,16 +62,21 @@ const MainChat = ({ onCloseClick }) => {
           </div>
         </div>
       </div>
-      <div className=" h-[360px] mx-5 my-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+      <div className="h-[360px] mx-5 my-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
         {renderMessagesWithSeparators()}
       </div>
-      <div className="mx-5 ">
+      <div className="mx-5 flex items-center">
         <input
           className="border border-slate-500 p-2 rounded-md w-[83%]"
           type="text"
           placeholder="Type a new message"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
         />
-        <button className="bg-[#2F80ED] text-white font-semibold py-2 px-5 rounded ml-3">
+        <button
+          className="bg-[#2F80ED] text-white font-semibold py-2 px-5 rounded ml-3"
+          onClick={handleSendMessage}
+        >
           Send
         </button>
       </div>
@@ -143,13 +90,14 @@ const Message = ({ content, sender, time }) => {
   const handleOptionsClick = () => {
     setShowOptions(!showOptions);
   };
+
   return (
     <div
-      className={`mb-2 mx-2 ${sender === 'You' ? 'text-right' : 'text-left'}`}
+      className={`mb-2 mx-2 ${sender === 'Diska' ? 'text-right' : 'text-left'}`}
     >
       <p
         className={`text-sm font-bold mb-1 ${
-          sender === 'You'
+          sender === 'Diska'
             ? 'text-[#AD72E6]'
             : sender === 'Friend1'
             ? 'text-[#E5A443]'
@@ -161,7 +109,7 @@ const Message = ({ content, sender, time }) => {
       <div>
         <div
           className={`${
-            sender === 'You'
+            sender === 'Diska'
               ? 'bg-[#EEDCFF] rounded-md'
               : sender === 'Friend1'
               ? 'bg-[#FCEED3] rounded-md'
@@ -174,14 +122,14 @@ const Message = ({ content, sender, time }) => {
             <SlOptions
               onClick={handleOptionsClick}
               className={`cursor-pointer absolute -top-14 ${
-                sender === 'You' ? '-left-8' : '-right-8'
+                sender === 'Diska' ? '-left-8' : '-right-8'
               }`}
             />
             {showOptions && (
               <div
                 className={`absolute ${
-                  sender === 'You' ? 'right-0' : 'left-[150px]'
-                } right-10 -bottom-7  divide-y bg-white rounded shadow-md w-24`}
+                  sender === 'Diska' ? 'right-0' : 'left-[150px]'
+                } right-10 -bottom-7 divide-y bg-white rounded shadow-md w-24`}
               >
                 <div className="text-blue-500 text-start px-3 py-1 ">Edit</div>
                 <div className="text-red-500 text-start px-3 py-1">Delete</div>

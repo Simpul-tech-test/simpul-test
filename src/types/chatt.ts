@@ -1,12 +1,14 @@
 export type ChattMainData = {
   sender: string;
-  message: boolean;
+  message: string;
+  created_at: string;
 };
 
 export interface ChattData extends ChattMainData {
   id: string;
   sender: string;
-  message: boolean;
+  title: string;
+  message: string;
   created_at: string;
   updated_at: string;
 }

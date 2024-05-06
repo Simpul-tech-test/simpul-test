@@ -1,13 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
-const baseURL = "https://be-diskaanj.vercel.app/api/"; // URL langsung
+const baseURL = "https://crudcrud.com/api/68c886e29e2b43348e162bad4b9bd64f"; 
 
 const instance = axios.create({
   baseURL: baseURL,
 });
 
 instance.interceptors.request.use((config) => {
-  // Tidak memerlukan autentikasi, tidak perlu menambahkan token
   return config;
 });
 

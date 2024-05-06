@@ -4,32 +4,33 @@ import { ChattData, ChattMainData } from "../types/chatt";
 
 export const chatService = {
   getAll(search?: string) {
-    return api.get<ApiResponseList<ChattData>>("/chat?q="+ search);
+    return api.get<ApiResponseList<ChattData>>("/newchat?q="+ search);
   },
   
   getList() {
-    return api.get<ApiResponse<ChattData[]>>("/chat");
+    return api.get<ApiResponse<ChattData[]>>("/newchat");
   },
 
   getOne(id: string) {
-    return api.get<{ data: ChattData }>("/chat/" + id);
+    return api.get<{ data: ChattData }>("/newchat/" + id);
   },
+  // async getOne(id: string) {
+  //   const response = await api.get<{ data: ChattData }>("/newchat/" + id);
+  //   return response.data.data;
+  // },
+  
+  
 
   create(data: ChattMainData) {
-    return api.post("/chat", data);
+    return api.post("/newchat", data);
   },
 
   edit(data: { id: string; data: ChattMainData }) {
-    return api.patch(`/chat/${data.id}`, data.data);
+    return api.patch(`/newchat/${data.id}`, data.data);
   },
 
-  editStatus(data: { id: string; status: Boolean }) {
-    return api.patch(`/chat/${data.id}`, {
-      status: data.status,
-    });
-  },
 
   delete(id: string) {
-    return api.delete(`/chat/${id}`);
+    return api.delete(`/newchat/${id}`);
   },
 };

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import iconSearch2 from '../../public/icon/search2.png';
 import groupChat from '../../public/icon/groupChat.png';
-import iconChat from '../../public/icon/iconChat.png';
 import { useQuery } from 'react-query';
 import { chatService } from '../service/chatt';
-import { ChattData, ChattMainData } from '../types/chatt';
+import { ChattData } from '../types/chatt';
 import MainChat from './MainChat';
 
 const ChatContent: React.FC = () => {
@@ -20,14 +19,12 @@ const ChatContent: React.FC = () => {
     return <div>Loading</div>;
   }
 
-  // if (error) {
-  //   return <div>Error: {error.message}</div>;
-  // }
-
   return (
     <div className="w-[650px] h-[480px] my-6 mx-8">
       {content ? (
-        <MainChat onCloseClick={handleClick} />
+         <MainChat onCloseClick={handleClick} 
+        //  id={''} 
+         />
       ) : (
         <div className="py-2 px-6">
           <div className="relative mb-1">
@@ -50,20 +47,20 @@ const ChatContent: React.FC = () => {
                 className="grid grid-cols-12 gap-x-2 pt-2 pb-[22px]  border-b-2 border-slate-300 cursor-pointer"
                 onClick={handleClick}
               >
-                {/* <div className="col-span-1 text-center">
-                  <img src={item.img} alt="chat" className="m-auto" />
-                </div> */}
+                <div className="col-span-1 text-center">
+                <img src={groupChat} alt="chat" className="m-auto" />
+                </div>
                 <div className="col-span-11 pl-3">
                   <div className="flex gap-x-5">
                     <h2 className="text-[#2F80ED] font-semibold">
-                      {/* {item.title} */}
+                      {item.title}
                     </h2>
                     <p className="text-xs whitespace-nowrap mt-1">
                       {item.created_at}
                     </p>
                   </div>
                   <div className="">
-                    <p className="text-sm font-bold">{item.sender}</p>
+                    <p className="text-sm font-bold">{item.sender} :</p>
                     <p className="text-xs ">{item.message}</p>
                   </div>
                 </div>

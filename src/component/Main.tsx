@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Popup from './Popup';
 import ChatContent from './ChatContent';
@@ -29,10 +29,15 @@ const Main = () => {
     setMode('todo');
   };
 
+  useEffect(() => {
+    console.log({mode})
+  }, [mode])
+
   return (
     <div className="flex-grow p-4 bg-[#333333]">
       <div className="fixed bottom-4 right-4">
         <motion.div
+          key="menu"
           className={`w-12 h-12 ${
             mode === 'chat' || mode === 'todo' ? 'bg-[#4F4F4F]' : 'bg-[#2F80ED]'
           } rounded-full flex justify-center items-center`}
@@ -48,6 +53,7 @@ const Main = () => {
         {showIcons && (
           <div className="fixed bottom-4 right-20 flex space-x-4">
             <motion.div
+              key="chat"
               className={`w-11 h-11 ${
                 mode === 'todo' ? 'bg-[#8785FF]' : 'bg-[#F2F2F2]'
               }  rounded-full flex justify-center items-center`}
@@ -66,6 +72,7 @@ const Main = () => {
               />
             </motion.div>
             <motion.div
+              key="todo"
               className={`w-11 h-11 ${
                 mode === 'chat' ? 'bg-[#F8B76B]' : 'bg-[#F2F2F2]'
               }  rounded-full flex justify-center items-center`}
@@ -91,6 +98,7 @@ const Main = () => {
               <TodoContent />
             )
           }
+          motionKey={`${mode}-mode`}
         />
       </AnimatePresence>
     </div>
