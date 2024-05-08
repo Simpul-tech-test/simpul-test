@@ -7,7 +7,7 @@ import { ChattData } from '../types/chatt';
 import MainChat from './MainChat';
 
 const ChatContent: React.FC = () => {
-  const { data: chatData, isLoading, error } = useQuery('chats', () => chatService.getAll());
+  const { data: chatData, isLoading, error } = useQuery('chats', () => chatService.getList());
 
   const [content, setContent] = useState(false);
 

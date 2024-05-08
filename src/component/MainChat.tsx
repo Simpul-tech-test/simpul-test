@@ -6,9 +6,23 @@ import { useQuery, useMutation } from 'react-query';
 import { chatService } from '../service/chatt';
 import { ChattData } from '../types/chatt';
 
-const MainChat = ({ onCloseClick }) => {
-  const { data: chatData, isLoading, error, refetch } = useQuery('chats', () => chatService.getAll());
-  
+interface MainChatProps {
+  onCloseClick: () => void;
+}
+
+interface MessageProps {
+  id: string;
+  content: string;
+  sender: string;
+  time: string;
+  onEdit: (id: string, newContent: string, sender: string, createdAt: string) => void;
+  onDelete: (id: string) => void;
+  isEditing: boolean;
+  setEditMessageId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const MainChat: React.FC<MainChatProps> = ({ onCloseClick }) => {
+  const { data: chatData, isLoading, error, refetch } = useQuery('chats', () => chatService.getList());
 
   const sendMessageMutation = useMutation(chatService.create, {
     onSuccess: () => {
@@ -16,12 +30,34 @@ const MainChat = ({ onCloseClick }) => {
     },
   });
 
+  const editMessageMutation = useMutation(chatService.edit, {
+    onSuccess: () => {
+      refetch(); // Refresh messages after editing a message
+    },
+  });
+
+  const deleteMessageMutation = useMutation(chatService.delete, {
+    onSuccess: () => {
+      refetch(); // Refresh messages after deleting a message
+    },
+  });
+
   const [newMessage, setNewMessage] = useState('');
+  const [editMessageId, setEditMessageId] = useState<string | null>(null);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return; // Don't send empty messages
-    await sendMessageMutation.mutateAsync({ message: newMessage, sender: 'Diska', created_at: new Date().toISOString() });
+    await sendMessageMutation.mutateAsync({ message: newMessage, sender: 'diska', created_at: new Date().toISOString() });
     setNewMessage(''); // Clear input field after sending message
+  };
+
+  const handleEditMessage = async (id: string, newContent: string, sender: string, createdAt: string) => {
+    await editMessageMutation.mutateAsync({ id, data: { message: newContent, sender, created_at: createdAt } });
+    setEditMessageId(null); // Reset edit message state
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    await deleteMessageMutation.mutateAsync(id);
   };
 
   const renderMessagesWithSeparators = () => {
@@ -38,7 +74,16 @@ const MainChat = ({ onCloseClick }) => {
 
       return (
         <React.Fragment key={id}>
-          <Message content={message} sender={sender} time={created_at} />
+          <Message
+            id={id}
+            content={message}
+            sender={sender}
+            time={created_at}
+            onEdit={handleEditMessage}
+            onDelete={handleDeleteMessage}
+            isEditing={editMessageId === id}
+            setEditMessageId={setEditMessageId}
+          />
         </React.Fragment>
       );
     });
@@ -84,55 +129,48 @@ const MainChat = ({ onCloseClick }) => {
   );
 };
 
-const Message = ({ content, sender, time }) => {
+const Message: React.FC<MessageProps> = ({ id, content, sender, time, onEdit, onDelete, isEditing, setEditMessageId }) => {
   const [showOptions, setShowOptions] = useState(false);
+  const [newContent, setNewContent] = useState(content);
 
   const handleOptionsClick = () => {
     setShowOptions(!showOptions);
   };
 
+  const handleEditButtonClick = () => {
+    if (!isEditing) {
+      setEditMessageId(id);
+    } else {
+      onEdit(id, newContent, sender, time);
+    }
+  };
+
   return (
-    <div
-      className={`mb-2 mx-2 ${sender === 'Diska' ? 'text-right' : 'text-left'}`}
-    >
-      <p
-        className={`text-sm font-bold mb-1 ${
-          sender === 'Diska'
-            ? 'text-[#AD72E6]'
-            : sender === 'Friend1'
-            ? 'text-[#E5A443]'
-            : 'text-[#72C9A9]'
-        }`}
-      >
+    <div className={`mb-2 mx-2 ${sender === 'diska' ? 'text-right' : 'text-left'}`}>
+      <p className={`text-sm font-bold mb-1 ${sender === 'diska' ? 'text-[#AD72E6]' : sender === 'Friend1' ? 'text-[#E5A443]' : 'text-[#72C9A9]'}`}>
         {sender}
       </p>
       <div>
-        <div
-          className={`${
-            sender === 'Diska'
-              ? 'bg-[#EEDCFF] rounded-md'
-              : sender === 'Friend1'
-              ? 'bg-[#FCEED3] rounded-md'
-              : 'bg-[#D2F2EA] rounded-md'
-          } inline-block p-2 max-w-[70%] rounded-md relative`}
-        >
-          {content}
-          <p className="text-xs mb-1">{time}</p>
-          <div className="relative">
-            <SlOptions
-              onClick={handleOptionsClick}
-              className={`cursor-pointer absolute -top-14 ${
-                sender === 'Diska' ? '-left-8' : '-right-8'
-              }`}
+        <div className={`${sender === 'diska' ? 'bg-[#EEDCFF] rounded-md' : sender === 'Friend1' ? 'bg-[#FCEED3] rounded-md' : 'bg-[#D2F2EA] rounded-md'} inline-block p-2 max-w-[70%] rounded-md relative`}>
+          {isEditing ? (
+            <input
+              type="text"
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              className="border-b border-slate-500"
             />
+          ) : (
+            <>
+              {content}
+              <p className="text-xs mb-1">{time}</p>
+            </>
+          )}
+          <div className="relative">
+            <SlOptions onClick={handleOptionsClick} className={`cursor-pointer absolute -top-14 ${sender === 'diska' ? '-left-8' : '-right-8'}`} />
             {showOptions && (
-              <div
-                className={`absolute ${
-                  sender === 'Diska' ? 'right-0' : 'left-[150px]'
-                } right-10 -bottom-7 divide-y bg-white rounded shadow-md w-24`}
-              >
-                <div className="text-blue-500 text-start px-3 py-1 ">Edit</div>
-                <div className="text-red-500 text-start px-3 py-1">Delete</div>
+              <div className={`absolute ${sender === 'diska' ? 'right-0' : 'left-[150px]'} right-10 -bottom-7 divide-y bg-white rounded shadow-md w-24`}>
+                <div className="text-blue-500 text-start px-3 py-1" onClick={handleEditButtonClick}>{isEditing ? 'Save' : 'Edit'}</div>
+                <div className="text-red-500 text-start px-3 py-1" onClick={() => onDelete(id)}>Delete</div>
               </div>
             )}
           </div>

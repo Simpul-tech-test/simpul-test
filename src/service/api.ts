@@ -1,29 +1,31 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 
-const baseURL = "https://crudcrud.com/api/68c886e29e2b43348e162bad4b9bd64f"; 
+// Definisikan konfigurasi untuk instance axios
+const axiosConfig: AxiosRequestConfig = {};
 
-const instance = axios.create({
-  baseURL: baseURL,
-});
+// Fungsi untuk membuat instance axios dengan baseURL yang berbeda
+const createInstance = (baseURL: string): AxiosInstance => {
+  return axios.create({
+    ...axiosConfig,
+    baseURL: baseURL,
+  });
+};
 
-instance.interceptors.request.use((config) => {
-  return config;
-});
+// Buat instance axios pertama dengan baseURL1
+const instance1 = createInstance("https://be-diskaanj.vercel.app/api");
 
-const api = (axios: AxiosInstance) => {
+// Buat instance axios kedua dengan baseURL2
+const instance2 = createInstance("https://crudcrud.com/api/68c886e29e2b43348e162bad4b9bd64f");
+
+// Fungsi untuk membuat API wrapper dengan instance axios yang diberikan
+const api = (axiosInstance: AxiosInstance) => {
   return {
     get<T>(url: string, config?: AxiosRequestConfig) {
-      return axios.get<T>(url, config);
+      return axiosInstance.get<T>(url, config);
     },
-
-    post<T>(
-      url: string,
-      body?: Record<string, any>,
-      config?: AxiosRequestConfig
-    ) {
-      return axios.post<T>(url, body, config);
+    post<T>(url: string, body?: Record<string, any>, config?: AxiosRequestConfig) {
+      return axiosInstance.post<T>(url, body, config);
     },
-
     patch<T>(
       url: string,
       body?: Record<string, any>,
@@ -31,31 +33,12 @@ const api = (axios: AxiosInstance) => {
     ) {
       return axios.patch<T>(url, body, config);
     },
-
-    formDataPatch<T>(
-      url: string,
-      body?: FormData,
-      config?: AxiosRequestConfig
-    ) {
-      return axios.patch<T>(url, body, config);
-    },
-
-    formDataPost<T>(url: string, body?: FormData, config?: AxiosRequestConfig) {
-      return axios.post<T>(url, body, config);
-    },
-
     delete<T>(url: string, config?: AxiosRequestConfig) {
       return axios.delete<T>(url, config);
-    },
-
-    deleteBatch<T>(
-      url: string,
-      body?: Record<string, any>,
-      config?: AxiosRequestConfig
-    ) {
-      return axios.delete<T>(url, { ...config, data: body });
     },
   };
 };
 
-export default api(instance);
+export const api1 = api(instance1);
+
+export const api2 = api(instance2);
